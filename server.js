@@ -9,7 +9,7 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(__dirname));
 
 const rooms = {};
 

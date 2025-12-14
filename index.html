@@ -782,7 +782,7 @@
         function initializeSocket() {
             if (socket) return;
             
-            socket = io('http://localhost:3000');
+            socket = io('https://game2-plyd.onrender.com');
 
             socket.on('gameCreated', ({ roomCode }) => {
                 currentRoomCode = roomCode;
