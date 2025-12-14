@@ -9,13 +9,23 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 
-// Serve static files from public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-// In-memory rooms storage
 const rooms = {};
 
-// Generate random 6-digit room code
+const people = [
+  { avatar: 'images/1.png', age: 57, race: 'Ази', gender: 'Эрэгтэй' },
+  { avatar: 'images/2.png', age: 79, race: 'Цагаан', gender: 'Эрэгтэй' },
+  { avatar: 'images/3.png', age: 20, race: 'Ази', gender: 'Эмэгтэй' },
+  { avatar: 'images/4.png', age: 27, race: 'Ази', gender: 'Эрэгтэй' },
+  { avatar: 'images/5.png', age: 23, race: 'Цагаан', gender: 'Эмэгтэй' },
+  { avatar: 'images/6.png', age: 3, race: 'Хар', gender: 'Эрэгтэй' },
+  { avatar: 'images/7.png', age: 25, race: 'Хар', gender: 'Эмэгтэй'  },
+  { avatar: 'images/8.png', age: 30, race: 'Латина', gender: 'Эмэгтэй'},
+  { avatar: 'images/9.png', age: 55, race: 'Энэтхэг', gender: 'Эрэгтэй' },
+  { avatar: 'images/10.png', age: 54, race: 'Цагаан', gender: 'Эмэгтэй'}
+];
+
 function generateRoomCode() {
   let code;
   do {
@@ -24,30 +34,65 @@ function generateRoomCode() {
   return code;
 }
 
-// Socket.IO connection handler
+function calculatePoints(guess, actual) {
+  let points = 0;
+  let feedback = [];
+
+  const ageDiff = Math.abs(guess.age - actual.age);
+  if (ageDiff === 0) {
+    points += 3;
+    feedback.push(`✅ Нас яг зөв! (${actual.age})`);
+  } else if (ageDiff <= 3) {
+    points += 2;
+    feedback.push(`✅ Нас ойрхон! (${actual.age})`);
+  } else if (ageDiff <= 5) {
+    points += 1;
+    feedback.push(`⚠️ Нас бага зэрэг ойрхон (${actual.age})`);
+  } else {
+    feedback.push(`❌ Нас буруу (${actual.age})`);
+  }
+
+  if (guess.race === actual.race) {
+    points += 1;
+    feedback.push(`✅ Үндэс зөв!`);
+  } else {
+    feedback.push(`❌ Үндэс буруу (${actual.race})`);
+  }
+
+  if (guess.gender === actual.gender) {
+    points += 1;
+    feedback.push(`✅ Хүйс зөв!`);
+  } else {
+    feedback.push(`❌ Хүйс буруу (${actual.gender})`);
+  }
+
+  return { points, feedback };
+}
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // HOST: Create a new game
-  socket.on('createGame', () => {
+  socket.on('createGame', ({ hostName }) => {
     const roomCode = generateRoomCode();
     
     rooms[roomCode] = {
       hostId: socket.id,
+      hostName: hostName,
       players: [],
       started: false,
-      currentQuestion: 0
+      currentQuestion: 0,
+      submissions: []
     };
 
     socket.join(roomCode);
     socket.roomCode = roomCode;
     socket.isHost = true;
+    socket.playerName = hostName;
 
     socket.emit('gameCreated', { roomCode });
-    console.log(`Room ${roomCode} created by ${socket.id}`);
+    console.log(`Room ${roomCode} created by ${hostName}`);
   });
 
-  // PLAYER: Join existing game
   socket.on('joinGame', ({ roomCode, playerName }) => {
     const room = rooms[roomCode];
 
@@ -61,14 +106,12 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Check if name already exists
     const nameExists = room.players.some(p => p.name === playerName);
     if (nameExists) {
       socket.emit('error', { message: 'Энэ нэр аль хэдийн ашиглагдаж байна!' });
       return;
     }
 
-    // Add player to room
     const player = {
       id: socket.id,
       name: playerName,
@@ -81,7 +124,6 @@ io.on('connection', (socket) => {
     socket.playerName = playerName;
     socket.isHost = false;
 
-    // Notify everyone in room about updated player list
     io.to(roomCode).emit('playerList', { 
       players: room.players,
       count: room.players.length 
@@ -91,7 +133,6 @@ io.on('connection', (socket) => {
     console.log(`${playerName} joined room ${roomCode}`);
   });
 
-  // HOST: Start the game
   socket.on('startGame', () => {
     const roomCode = socket.roomCode;
     const room = rooms[roomCode];
@@ -107,37 +148,81 @@ io.on('connection', (socket) => {
     }
 
     room.started = true;
+    room.currentQuestion = 0;
+    room.submissions = [];
 
-    // Notify all players that game is starting
     io.to(roomCode).emit('gameStarted', { 
-      message: 'Тоглоом эхэллээ!',
-      players: room.players 
+      currentQuestion: room.currentQuestion
     });
 
     console.log(`Game started in room ${roomCode}`);
   });
 
-  // PLAYER: Submit answer
-  socket.on('submitAnswer', ({ questionIndex, points }) => {
+  socket.on('submitAnswer', ({ age, race, gender }) => {
     const roomCode = socket.roomCode;
     const room = rooms[roomCode];
 
-    if (!room) return;
+    if (!room || socket.isHost) return;
 
+    const currentPerson = people[room.currentQuestion];
+    const { points, feedback } = calculatePoints(
+      { age, race, gender },
+      currentPerson
+    );
+
+    // Update player score immediately
     const player = room.players.find(p => p.id === socket.id);
-    if (!player) return;
+    if (player) {
+      player.score += points;
+    }
 
-    player.score += points;
+    // Send result to player
+    socket.emit('answerResult', { points, feedback });
+    socket.emit('scoreUpdate', { score: player.score });
 
-    // Notify room of updated score
-    io.to(roomCode).emit('scoreUpdated', {
+    // Add to submissions for host to view
+    room.submissions.push({
       playerId: socket.id,
-      playerName: player.name,
-      score: player.score
+      playerName: socket.playerName,
+      age,
+      race,
+      gender,
+      points,
+      feedback
     });
+
+    // Send updated submissions to host
+    io.to(room.hostId).emit('submissionsUpdate', { 
+      submissions: room.submissions,
+      totalPlayers: room.players.length
+    });
+
+    console.log(`${socket.playerName} submitted answer: +${points} points`);
   });
 
-  // HOST: End game and show leaderboard
+  socket.on('nextQuestion', () => {
+    const roomCode = socket.roomCode;
+    const room = rooms[roomCode];
+
+    if (!room || room.hostId !== socket.id) return;
+
+    room.currentQuestion++;
+    room.submissions = [];
+
+    if (room.currentQuestion >= people.length) {
+      // Game ended
+      const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
+      io.to(roomCode).emit('gameEnded', { leaderboard: sortedPlayers });
+      console.log(`Game ended in room ${roomCode}`);
+    } else {
+      // Next question
+      io.to(roomCode).emit('nextQuestion', { 
+        currentQuestion: room.currentQuestion 
+      });
+      console.log(`Next question in room ${roomCode}: ${room.currentQuestion}`);
+    }
+  });
+
   socket.on('endGame', () => {
     const roomCode = socket.roomCode;
     const room = rooms[roomCode];
@@ -145,15 +230,10 @@ io.on('connection', (socket) => {
     if (!room || room.hostId !== socket.id) return;
 
     const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
-
-    io.to(roomCode).emit('gameEnded', {
-      leaderboard: sortedPlayers
-    });
-
-    console.log(`Game ended in room ${roomCode}`);
+    io.to(roomCode).emit('gameEnded', { leaderboard: sortedPlayers });
+    console.log(`Game manually ended in room ${roomCode}`);
   });
 
-  // Handle disconnection
   socket.on('disconnect', () => {
     const roomCode = socket.roomCode;
     const room = rooms[roomCode];
@@ -161,23 +241,32 @@ io.on('connection', (socket) => {
     if (!room) return;
 
     if (socket.isHost) {
-      // Host disconnected - end game for everyone
       io.to(roomCode).emit('hostDisconnected', { 
         message: 'Зохион байгуулагч салсан тул тоглоом дууслаа!' 
       });
       delete rooms[roomCode];
       console.log(`Room ${roomCode} deleted - host disconnected`);
     } else {
-      // Player disconnected - remove from list
       const playerIndex = room.players.findIndex(p => p.id === socket.id);
       if (playerIndex !== -1) {
         const playerName = room.players[playerIndex].name;
         room.players.splice(playerIndex, 1);
         
+        // Remove submission if exists
+        room.submissions = room.submissions.filter(s => s.playerId !== socket.id);
+        
         io.to(roomCode).emit('playerList', { 
           players: room.players,
           count: room.players.length 
         });
+
+        // Update submissions for host
+        if (room.started) {
+          io.to(room.hostId).emit('submissionsUpdate', { 
+            submissions: room.submissions,
+            totalPlayers: room.players.length
+          });
+        }
 
         console.log(`${playerName} left room ${roomCode}`);
       }
