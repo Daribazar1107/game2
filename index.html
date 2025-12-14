@@ -2,7 +2,9 @@
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Хэн бэ? - Тэмцээн</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
@@ -11,12 +13,16 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        html {
+            scroll-behavior: smooth;
+        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,10 +31,72 @@
         .container {
             background: white;
             border-radius: 20px;
-            padding: 30px;
-            max-width: 700px;
+            padding: 20px;
+            max-width: 900px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 15px;
+                margin: 5px 0;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .subtitle {
+                font-size: 1em;
+            }
+
+            .room-code-display .code {
+                font-size: 2em;
+                letter-spacing: 5px;
+            }
+
+            .person-card {
+                padding: 15px;
+            }
+
+            .avatar {
+                max-width: 300px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+            }
+
+            .room-code-display .code {
+                font-size: 1.5em;
+                letter-spacing: 3px;
+            }
+
+            .avatar {
+                max-width: 250px;
+            }
+
+            .player-count .number {
+                font-size: 2em;
+            }
         }
         
         h1 {
@@ -74,6 +142,20 @@
             margin-bottom: 20px;
         }
 
+        @media (max-width: 480px) {
+            .mode-selection {
+                padding: 10px;
+            }
+
+            .mode-selection h2 {
+                font-size: 1.2em;
+            }
+
+            .btn span {
+                font-size: 0.75em;
+            }
+        }
+
         .input-group {
             display: flex;
             flex-direction: column;
@@ -94,11 +176,21 @@
             border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        /* Better touch targets for mobile */
+        @media (max-width: 768px) {
+            input, select {
+                padding: 14px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
         }
 
         .btn {
@@ -119,12 +211,29 @@
             transform: scale(1.05);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-secondary {
             background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
         }
 
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            width: auto;
+            margin: 5px;
         }
         
         .person-card {
@@ -142,17 +251,24 @@
         }
         
         .avatar {
-            width: 300px;
-            height: 300px;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 1;
             border-radius: 15px;
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 180px;
             margin: 0 auto 20px;
             border: 4px solid #667eea;
             overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .person-number {
@@ -172,6 +288,14 @@
             padding: 15px;
             border-radius: 8px;
             font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        @media (max-width: 480px) {
+            .result {
+                padding: 12px;
+                font-size: 0.9em;
+            }
         }
         
         .result.correct {
@@ -198,12 +322,33 @@
             color: white;
             padding: 30px;
             border-radius: 15px;
-            margin-top: 20px;
         }
         
         .final-score h2 {
             font-size: 2.5em;
             margin-bottom: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .final-score {
+                padding: 20px;
+            }
+
+            .final-score h2 {
+                font-size: 1.8em;
+            }
+
+            .final-score div {
+                font-size: 0.9em !important;
+            }
+
+            .final-score div[style*="font-size: 2em"] {
+                font-size: 1.5em !important;
+            }
+
+            .final-score div[style*="font-size: 3em"] {
+                font-size: 2em !important;
+            }
         }
 
         .leaderboard {
@@ -228,6 +373,19 @@
             border-radius: 8px;
             margin-bottom: 8px;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .leaderboard-item {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+
+            .leaderboard-item.top1 {
+                font-size: 1em;
+            }
         }
 
         .leaderboard-item.top1 {
@@ -313,6 +471,16 @@
             margin-bottom: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
+        @media (max-width: 480px) {
+            .player-item {
+                padding: 8px;
+            }
+
+            .player-item div {
+                font-size: 0.9em;
+            }
+        }
         
         .player-number {
             width: 35px;
@@ -352,20 +520,98 @@
             font-size: 1.8em;
             margin-bottom: 10px;
         }
+
+        .submission-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+        }
+
+        .submission-card.submitted {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .submission-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .submission-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-submitted {
+            background: #28a745;
+            color: white;
+        }
+
+        .submission-details {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9em;
+            word-wrap: break-word;
+        }
+
+        @media (max-width: 480px) {
+            .submission-details {
+                font-size: 0.85em;
+            }
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Хэн бэ?</h1>
+        <h1>Face-Off Challenge</h1>
         <div class="subtitle">🏆 Тэмцээн</div>
         
         <!-- MODE SELECTION -->
         <div id="mode-screen" class="mode-selection">
             <h2>Тоглоомын төрөл сонгох</h2>
-            <div class="btn" onclick="showSinglePlayer()">
-                🎮 Ганцаараа тоглох
-            </div>
-            <div class="btn btn-success" style="margin-top: 15px;" onclick="showMultiplayerOptions()">
+            <div class="btn btn-success" onclick="showMultiplayerOptions()">
                 👥 Олон тоглогчтой
             </div>
         </div>
@@ -374,10 +620,12 @@
         <div id="multiplayer-options" class="mode-selection hidden">
             <h2>Олон тоглогчтой тоглоом</h2>
             <div class="btn" onclick="createRoom()">
-                🎯 Өрөө үүсгэх (Зохион байгуулагч)
+                🎯 Өрөө үүсгэх (Зохион байгуулагч)<br>
+                <span style="font-size: 0.8em; opacity: 0.8;">Раундуудыг удирдах</span>
             </div>
             <div class="btn btn-secondary" style="margin-top: 15px;" onclick="showJoinRoom()">
-                🚪 Өрөөнд нэгдэх (Тоглогч)
+                🚪 Өрөөнд нэгдэх (Тоглогч)<br>
+                <span style="font-size: 0.8em; opacity: 0.8;">Оноо цуглуулах</span>
             </div>
             <div class="btn btn-secondary" onclick="backToModeSelection()">
                 Буцах
@@ -419,6 +667,9 @@
             <div class="btn btn-success" onclick="startMultiplayerGame()">
                 🚀 Тоглоом эхлүүлэх
             </div>
+            <div style="text-align: center; margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 10px; color: #856404;">
+                💡 Та зохион байгуулагчийн хувьд раундуудыг удирдана. Тоглогчид автоматаар оноо авна.
+            </div>
             <div class="btn btn-secondary" onclick="cancelRoom()">
                 Цуцлах
             </div>
@@ -429,6 +680,7 @@
             <div class="waiting-message">
                 <h2>⏳ Хүлээж байна...</h2>
                 <p>Зохион байгуулагч тоглоом эхлүүлэх хүртэл хүлээнэ үү</p>
+                <p style="margin-top: 10px; font-size: 0.9em;">💡 Та тааж оноо цуглуулна! Зохион байгуулагч раундуудыг удирдана.</p>
             </div>
 
             <div class="room-code-display">
@@ -447,26 +699,23 @@
             </div>
         </div>
 
-        <!-- SINGLE PLAYER LOGIN -->
-        <div id="login-screen" class="mode-selection hidden">
-            <h2>Нэрээ оруулна уу</h2>
-            <div class="input-group">
-                <label for="player-name">Таны нэр:</label>
-                <input type="text" id="single-player-name" placeholder="Нэрээ оруулна уу" maxlength="20">
-            </div>
-            <button class="btn" onclick="startSinglePlayer()">Тоглоом эхлүүлэх</button>
-            <button class="btn btn-secondary" onclick="backToModeSelection()">Буцах</button>
-        </div>
-        
-        <!-- GAME SCREEN -->
-        <div id="game-screen" class="hidden">
+        <!-- PLAYER GAME SCREEN -->
+        <div id="player-game-screen" class="hidden">
             <div class="player-info">
-                Тоглогч: <span id="current-player"></span>
+                Тоглогч: <span id="player-current-player"></span>
             </div>
             <div class="score">
-                Оноо: <span id="score">0</span> / <span id="total">0</span>
+                Оноо: <span id="player-score">0</span>
             </div>
-            <div id="game-area"></div>
+            <div id="player-game-area"></div>
+        </div>
+
+        <!-- HOST GAME SCREEN -->
+        <div id="host-game-screen" class="hidden">
+            <div class="player-info">
+                🎮 Зохион байгуулагч - Раунд удирдах
+            </div>
+            <div id="host-game-area"></div>
         </div>
 
         <!-- FINAL SCREEN -->
@@ -474,29 +723,24 @@
     </div>
 
     <script>
-        // Socket.IO connection
         let socket = null;
-        let isMultiplayer = false;
         let isHost = false;
         let currentRoomCode = '';
+        let playerName = '';
+        let myScore = 0;
 
         const people = [
-            { avatar: '👨‍💼', age: 34, race: 'Цагаан', gender: 'Эрэгтэй' },
-            { avatar: '👩‍🦱', age: 28, race: 'Хар', gender: 'Эмэгтэй' },
-            { avatar: '👨‍🦰', age: 45, race: 'Цагаан', gender: 'Эрэгтэй' },
-            { avatar: '👩‍🦳', age: 67, race: 'Ази', gender: 'Эмэгтэй' },
-            { avatar: '👨', age: 22, race: 'Латин', gender: 'Эрэгтэй' },
-            { avatar: '👩‍🦰', age: 31, race: 'Цагаан', gender: 'Эмэгтэй' },
-            { avatar: '👨‍🦱', age: 41, race: 'Хар', gender: 'Эрэгтэй' },
-            { avatar: '👩', age: 25, race: 'Ази', gender: 'Эмэгтэй' },
-            { avatar: '👨‍🦲', age: 53, race: 'Энэтхэг', gender: 'Эрэгтэй' },
-            { avatar: '👩‍🦲', age: 39, race: 'Ойрхи Дорнод', gender: 'Эмэгтэй' }
+            { avatar: 'images/1.png', age: 57, race: 'Ази', gender: 'Эрэгтэй' },
+            { avatar: 'images/2.png', age: 79, race: 'Цагаан', gender: 'Эрэгтэй' },
+            { avatar: 'images/3.png', age: 20, race: 'Ази', gender: 'Эмэгтэй' },
+            { avatar: 'images/4.png', age: 27, race: 'Ази', gender: 'Эрэгтэй' },
+            { avatar: 'images/5.png', age: 23, race: 'Цагаан', gender: 'Эмэгтэй' },
+            { avatar: 'images/6.png', age: 3, race: 'Хар', gender: 'Эрэгтэй' },
+            { avatar: 'images/7.png', age: 25, race: 'Хар', gender: 'Эмэгтэй' },
+            { avatar: 'images/8.png', age: 30, race: 'Латина', gender: 'Эмэгтэй' },
+            { avatar: 'images/9.png', age: 55, race: 'Энэтхэг', gender: 'Эрэгтэй' },
+            { avatar: 'images/10.png', age: 54, race: 'Цагаан', gender: 'Эмэгтэй' }
         ];
-
-        let currentPerson = 0;
-        let score = 0;
-        let answered = false;
-        let playerName = '';
 
         const races = ['Цагаан', 'Хар', 'Энэтхэг', 'Латин', 'Ази', 'Ойрхи Дорнод'];
         const genders = ['Эрэгтэй', 'Эмэгтэй'];
@@ -512,13 +756,7 @@
             if (screen) screen.classList.remove('hidden');
         }
 
-        function showSinglePlayer() {
-            isMultiplayer = false;
-            showScreen('login-screen');
-        }
-
         function showMultiplayerOptions() {
-            isMultiplayer = true;
             initializeSocket();
             showScreen('multiplayer-options');
         }
@@ -544,7 +782,6 @@
         function initializeSocket() {
             if (socket) return;
             
-            // Replace with your server URL
             socket = io('http://localhost:3000');
 
             socket.on('gameCreated', ({ roomCode }) => {
@@ -565,13 +802,46 @@
                 updatePlayersList(players, count);
             });
 
-            socket.on('gameStarted', () => {
-                showScreen('game-screen');
-                currentPerson = 0;
-                score = 0;
-                document.getElementById('current-player').textContent = playerName;
-                updateScore();
-                renderPerson();
+            socket.on('gameStarted', ({ currentQuestion }) => {
+                myScore = 0;
+                if (isHost) {
+                    showScreen('host-game-screen');
+                    renderHostQuestion(currentQuestion);
+                } else {
+                    showScreen('player-game-screen');
+                    document.getElementById('player-current-player').textContent = playerName;
+                    document.getElementById('player-score').textContent = myScore;
+                    renderPlayerQuestion(currentQuestion);
+                }
+            });
+
+            socket.on('nextQuestion', ({ currentQuestion }) => {
+                if (isHost) {
+                    renderHostQuestion(currentQuestion);
+                } else {
+                    renderPlayerQuestion(currentQuestion);
+                }
+            });
+
+            socket.on('submissionsUpdate', ({ submissions, totalPlayers }) => {
+                if (isHost) {
+                    renderSubmissions(submissions, totalPlayers);
+                }
+            });
+
+            socket.on('answerResult', ({ points, feedback }) => {
+                if (!isHost) {
+                    showPlayerResult(points, feedback);
+                }
+            });
+
+            socket.on('scoreUpdate', ({ score }) => {
+                myScore = score;
+                document.getElementById('player-score').textContent = myScore;
+            });
+
+            socket.on('gameEnded', ({ leaderboard }) => {
+                showFinalScore(leaderboard);
             });
 
             socket.on('error', ({ message }) => {
@@ -588,7 +858,7 @@
             const name = prompt('Таны нэр:');
             if (!name) return;
             playerName = name;
-            socket.emit('createGame');
+            socket.emit('createGame', { hostName: name });
         }
 
         function joinRoom() {
@@ -642,39 +912,18 @@
             backToModeSelection();
         }
 
-        // Single player functions
-        function startSinglePlayer() {
-            const nameInput = document.getElementById('single-player-name');
-            playerName = nameInput.value.trim();
-            
-            if (!playerName) {
-                alert('Нэрээ оруулна уу!');
-                return;
-            }
-
-            showScreen('game-screen');
-            document.getElementById('current-player').textContent = playerName;
-            currentPerson = 0;
-            score = 0;
-            answered = false;
-            updateScore();
-            renderPerson();
-        }
-
-        function renderPerson() {
-            if (currentPerson >= people.length) {
-                showFinalScore();
-                return;
-            }
-
-            const person = people[currentPerson];
-            const gameArea = document.getElementById('game-area');
+        // Player functions
+        function renderPlayerQuestion(questionIndex) {
+            const person = people[questionIndex];
+            const gameArea = document.getElementById('player-game-area');
             
             gameArea.innerHTML = `
                 <div class="person-card">
                     <div class="person-header">
-                        <div class="avatar">${person.avatar}</div>
-                        <div class="person-number">Хүн ${currentPerson + 1} / ${people.length}</div>
+                        <div class="avatar">
+                            <img src="${person.avatar}" alt="Person ${questionIndex + 1}">
+                        </div>
+                        <div class="person-number">Хүн ${questionIndex + 1} / ${people.length}</div>
                     </div>
                     <div class="guess-section">
                         <div class="input-group">
@@ -695,16 +944,14 @@
                                 ${genders.map(g => `<option value="${g}">${g}</option>`).join('')}
                             </select>
                         </div>
-                        <button class="btn" onclick="submitGuess()">Хариулах</button>
+                        <button class="btn" id="submit-btn" onclick="submitPlayerGuess()">Хариулах</button>
                     </div>
-                    <div id="result-area"></div>
+                    <div id="player-result-area"></div>
                 </div>
             `;
         }
 
-        function submitGuess() {
-            if (answered) return;
-
+        function submitPlayerGuess() {
             const ageGuess = parseInt(document.getElementById('age-guess').value);
             const raceGuess = document.getElementById('race-guess').value;
             const genderGuess = document.getElementById('gender-guess').value;
@@ -714,94 +961,157 @@
                 return;
             }
 
-            const person = people[currentPerson];
-            let points = 0;
-            let feedback = [];
+            socket.emit('submitAnswer', {
+                age: ageGuess,
+                race: raceGuess,
+                gender: genderGuess
+            });
 
-            const ageDiff = Math.abs(ageGuess - person.age);
-            if (ageDiff === 0) {
-                points += 3;
-                feedback.push(`✅ Нас яг зөв! (${person.age})`);
-            } else if (ageDiff <= 3) {
-                points += 2;
-                feedback.push(`✅ Нас ойрхон! (Бодит: ${person.age}, Таны хариулт: ${ageGuess})`);
-            } else if (ageDiff <= 5) {
-                points += 1;
-                feedback.push(`⚠️ Нас бага зэрэг ойрхон (Бодит: ${person.age})`);
-            } else {
-                feedback.push(`❌ Нас буруу (Бодит: ${person.age})`);
-            }
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('player-result-area').innerHTML = `
+                <div class="waiting-message">
+                    <h2>✅ Илгээсэн</h2>
+                    <p>Бусад тоглогчид хариулахыг хүлээж байна...</p>
+                </div>
+            `;
+        }
 
-            if (raceGuess === person.race) {
-                points += 1;
-                feedback.push(`✅ Үндэс угсаа зөв!`);
-            } else {
-                feedback.push(`❌ Үндэс угсаа буруу (Бодит: ${person.race})`);
-            }
-
-            if (genderGuess === person.gender) {
-                points += 1;
-                feedback.push(`✅ Хүйс зөв!`);
-            } else {
-                feedback.push(`❌ Хүйс буруу (Бодит: ${person.gender})`);
-            }
-
-            score += points;
-            updateScore();
-
-            const resultArea = document.getElementById('result-area');
+        function showPlayerResult(points, feedback) {
+            const resultArea = document.getElementById('player-result-area');
             const resultClass = points >= 4 ? 'correct' : points >= 3 ? 'partial' : 'incorrect';
             
             resultArea.innerHTML = `
                 <div class="result ${resultClass}">
                     <div style="font-size: 1.2em; margin-bottom: 10px;">+${points} оноо</div>
                     ${feedback.join('<br>')}
-                    <button class="btn" onclick="nextPerson()" style="margin-top: 15px;">Дараагийн хүн</button>
+                </div>
+            `;
+        }
+
+        // Host functions
+        function renderHostQuestion(questionIndex) {
+            const person = people[questionIndex];
+            const gameArea = document.getElementById('host-game-area');
+            
+            gameArea.innerHTML = `
+                <div class="person-card">
+                    <div class="person-header">
+                        <div class="avatar">
+                            <img src="${person.avatar}" alt="Person ${questionIndex + 1}">
+                        </div>
+                        <div class="person-number">Хүн ${questionIndex + 1} / ${people.length}</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; margin-top: 20px;">
+                        <strong>Бодит хариулт:</strong><br>
+                        Нас: ${person.age} | Үндэс: ${person.race} | Хүйс: ${person.gender}
+                    </div>
+                </div>
+                <div class="person-card">
+                    <h3 style="color: #667eea; margin-bottom: 15px; text-align: center;">📊 Тоглогчдын үр дүн</h3>
+                    <div id="progress-container"></div>
+                    <div id="submissions-list">
+                        <p style="text-align: center; color: #999;">Хариулт хүлээж байна...</p>
+                    </div>
+                </div>
+                <div class="btn btn-success" id="next-question-btn" onclick="nextQuestion()">
+                    ➡️ Дараагийн раунд
+                </div>
+                <div class="btn btn-danger" onclick="endGame()">
+                    🏁 Тоглоом дуусгах
+                </div>
+            `;
+        }
+
+        function renderSubmissions(submissions, totalPlayers) {
+            const progressContainer = document.getElementById('progress-container');
+            const listEl = document.getElementById('submissions-list');
+            
+            const submittedCount = submissions.length;
+            const percentage = Math.round((submittedCount / totalPlayers) * 100);
+            
+            progressContainer.innerHTML = `
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%">
+                        ${submittedCount} / ${totalPlayers}
+                    </div>
                 </div>
             `;
 
-            answered = true;
-
-            // Send score to server if multiplayer
-            if (isMultiplayer && socket) {
-                socket.emit('updateScore', { playerId: socket.id, points });
-            }
-        }
-
-        function nextPerson() {
-            currentPerson++;
-            answered = false;
-            renderPerson();
-        }
-
-        function updateScore() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('total').textContent = currentPerson * 5;
-        }
-
-        function showFinalScore() {
-            const maxScore = people.length * 5;
-            const percentage = Math.round((score / maxScore) * 100);
-            
-            let message = '';
-            if (percentage >= 80) message = '🏆 Гайхалтай!';
-            else if (percentage >= 60) message = '🎉 Маш сайн!';
-            else if (percentage >= 40) message = '👍 Муу биш!';
-            else message = '💪 Үргэлжлүүлээрэй!';
-
-            if (isMultiplayer && socket && isHost) {
-                socket.emit('endGame');
+            if (submissions.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #999;">Хариулт хүлээж байна...</p>';
+                return;
             }
 
+            const html = submissions.map(sub => {
+                return `
+                    <div class="submission-card submitted">
+                        <div class="submission-header">
+                            <span>${sub.playerName}</span>
+                            <span class="submission-status status-submitted">
+                                ✅ +${sub.points} оноо
+                            </span>
+                        </div>
+                        <div class="submission-details">
+                            <strong>Хариулт:</strong> Нас: ${sub.age} | Үндэс: ${sub.race} | Хүйс: ${sub.gender}<br>
+                            <div style="margin-top: 5px;">${sub.feedback.join(' • ')}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            listEl.innerHTML = html;
+        }
+
+        function nextQuestion() {
+            socket.emit('nextQuestion');
+        }
+
+        function endGame() {
+            socket.emit('endGame');
+        }
+
+        function showFinalScore(leaderboard) {
             showScreen('final-screen');
+            
+            const myRank = leaderboard.findIndex(p => p.name === playerName) + 1;
+            const myData = leaderboard.find(p => p.name === playerName);
+            
+            const leaderboardHtml = leaderboard.map((player, index) => {
+                let className = '';
+                let medal = '';
+                if (index === 0) {
+                    className = 'top1';
+                    medal = '🥇 ';
+                } else if (index === 1) {
+                    className = 'top2';
+                    medal = '🥈 ';
+                } else if (index === 2) {
+                    className = 'top3';
+                    medal = '🥉 ';
+                }
+                
+                return `
+                    <div class="leaderboard-item ${className}">
+                        <span class="rank">${medal}${index + 1}.</span>
+                        <span class="player-name">${player.name}</span>
+                        <span class="player-score">${player.score} оноо</span>
+                    </div>
+                `;
+            }).join('');
+
             document.getElementById('final-screen').innerHTML = `
                 <div class="final-score">
-                    <h2>Тоглоом дууслаа!</h2>
-                    <div style="font-size: 3em; margin: 20px 0;">${score} / ${maxScore}</div>
-                    <div style="font-size: 1.5em;">${percentage}%</div>
-                    <div style="font-size: 1.2em; margin-top: 15px;">${message}</div>
-                    <button class="btn" onclick="backToModeSelection()">Буцах</button>
+                    <h2>🏆 Тоглоом дууслаа!</h2>
+                    ${!isHost && myData ? `
+                        <div style="font-size: 2em; margin: 20px 0;">Таны оноо: ${myData.score}</div>
+                        <div style="font-size: 1.5em;">Байр: ${myRank}/${leaderboard.length}</div>
+                    ` : ''}
                 </div>
+                <div class="leaderboard">
+                    <h3>🏆 Эцсийн үр дүн</h3>
+                    ${leaderboardHtml}
+                </div>
+                <button class="btn" onclick="backToModeSelection()">Буцах</button>
             `;
         }
     </script>
