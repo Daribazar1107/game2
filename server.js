@@ -16,12 +16,12 @@ const rooms = {};
 const people = [
             { avatar: 'images/1.png', age: 57, race: 'Ази', gender: 'Эрэгтэй' },
             { avatar: 'images/2.png', age: 79, race: 'Цагаан', gender: 'Эрэгтэй' },
-            { avatar: 'images/3.png', age: 30, race: 'Латина', gender: 'Эмэгтэй' },
-            { avatar: 'images/4.png', age: 40, race: 'Латина', gender: 'Эрэгтэй' },
+            { avatar: 'images/3.png', age: 30, race: 'Латин', gender: 'Эмэгтэй' },
+            { avatar: 'images/4.png', age: 40, race: 'Латин', gender: 'Эрэгтэй' },
             { avatar: 'images/5.png', age: 23, race: 'Цагаан', gender: 'Эмэгтэй' },
             { avatar: 'images/6.png', age: 60, race: 'Цагаан', gender: 'Эрэгтэй' },
             { avatar: 'images/7.png', age: 25, race: 'Хар', gender: 'Эмэгтэй' },
-            { avatar: 'images/8.png', age: 30, race: 'Латина', gender: 'Эмэгтэй' },
+            { avatar: 'images/8.png', age: 30, race: 'Латин', gender: 'Эмэгтэй' },
             { avatar: 'images/9.png', age: 23, race: 'Хар', gender: 'Эрэгтэй' },
             { avatar: 'images/10.png', age: 30, race: 'Ази', gender: 'Эрэгтэй' }
         ];
