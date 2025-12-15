@@ -923,22 +923,22 @@
                         <div class="avatar">
                             <img src="${person.avatar}" alt="Person ${questionIndex + 1}">
                         </div>
-                        <div class="person-number">Хүн ${questionIndex + 1} / ${people.length}</div>
+                        <div class="person-number"> Face ${questionIndex + 1} / ${people.length}</div>
                     </div>
                     <div class="guess-section">
                         <div class="input-group">
-                            <label for="age-guess">Насыг таа (нас):</label>
+                            <label for="age-guess">Нас:</label>
                             <input type="number" id="age-guess" min="1" max="100" placeholder="Насыг оруулна уу">
                         </div>
                         <div class="input-group">
-                            <label for="race-guess">Үндэс угсааг таа:</label>
+                            <label for="race-guess">Үндэс угсаа:</label>
                             <select id="race-guess">
                                 <option value="">-- Сонгоно уу --</option>
                                 ${races.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
                         </div>
                         <div class="input-group">
-                            <label for="gender-guess">Хүйсийг таа:</label>
+                            <label for="gender-guess">Хүйс:</label>
                             <select id="gender-guess">
                                 <option value="">-- Сонгоно уу --</option>
                                 ${genders.map(g => `<option value="${g}">${g}</option>`).join('')}
